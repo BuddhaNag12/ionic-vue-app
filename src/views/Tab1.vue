@@ -2,27 +2,28 @@
   <ion-page>
     <ion-header>
       <ion-toolbar>
-        <ion-title>Covid 19 live data</ion-title>
+        <ion-title>Covid 19 traker</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content :fullscreen="true">
       <ion-header collapse="condense">
         <ion-toolbar>
-          <ion-title size="large">Covid 19 live data</ion-title>
+          <ion-title size="large">{{
+            selectedCountry? selectedCountry : "Global Data"
+          }}</ion-title>
         </ion-toolbar>
       </ion-header>
+
+      <ion-title align="center" id="CountryTitle">{{
+        selectedCountry ? selectedCountry : "Global Data"
+      }}</ion-title>
 
       <ion-loading
         :is-open="isLoading"
         cssClass="my-custom-class"
         message="Please wait..."
-        :duration="isLoading"
-        @onDidDismiss="isLoading = false"
       >
       </ion-loading>
-      <ion-title align="center" id="CountryTitle">{{
-        selectedCountry || "Global Data"
-      }}</ion-title>
       <ion-grid>
         <ion-row>
           <ion-col size="12" size-sm>
@@ -35,22 +36,21 @@
             <Card :totalValues="covidData.totalDeaths" valueType="Deaths"
           /></ion-col>
         </ion-row>
-      </ion-grid>
-      <ion-item>
-        <ion-label>Select by country</ion-label>
-        <ion-select
-          placeholder="Select One"
-          @ionChange="(event) => checkByCountry(event)"
-        >
-          <ion-select-option
-            v-for="(name, index) in covidData.countries"
-            :key="index"
-            :value="name"
-            @ionChange="selectedCountry = $event.target.value"
-            >{{ name }}</ion-select-option
+        <ion-item>
+          <ion-label>Select by country</ion-label>
+          <ion-select
+            placeholder="Select One"
+            @ionChange="(event) => checkByCountry(event)"
           >
-        </ion-select>
-      </ion-item>
+            <ion-select-option
+              v-for="name in covidData.countries"
+              :key="name"
+              :value="name"
+              >{{ name }}</ion-select-option
+            >
+          </ion-select>
+        </ion-item>
+      </ion-grid>
     </ion-content>
   </ion-page>
 </template>
@@ -65,16 +65,16 @@ import {
   IonCol,
   IonGrid,
   IonRow,
-  IonLoading,
   IonLabel,
   IonSelect,
   IonSelectOption,
   IonItem,
+  IonLoading,
 } from "@ionic/vue";
 
 import { defineComponent } from "vue";
 
-import Card from "@/components/card.vue";
+import Card from "@/components/MyCard.vue";
 import axios from "axios";
 const api = "https://covid19.mathdro.id/api/";
 const dailyApi = "https://covid19.mathdro.id/api/daily";
@@ -106,11 +106,11 @@ export default defineComponent({
     IonCol,
     IonGrid,
     IonRow,
-    IonLoading,
     IonLabel,
     IonSelect,
     IonSelectOption,
     IonItem,
+    IonLoading,
   },
 
   data() {
@@ -132,24 +132,34 @@ export default defineComponent({
   },
 
   methods: {
-    checkByCountry(evt: any) {
+    checkByCountry: function (evt: any) {
+      this.isLoading = true;
       this.selectedCountry = evt.detail.value;
-      axios
-        .get(`${api}countries/${evt.detail.value}`)
-        .then(({ data }) => {
-          const resultData = data;
-          this.covidData.totalDeaths = resultData.deaths.value;
-          this.covidData.totalConfirmed = resultData.confirmed.value;
-          const recovered: number =
-            this.covidData.totalConfirmed - this.covidData.totalDeaths;
-          this.covidData.totalRecovered = recovered;
-        })
-        .catch((err) => console.log(err));
+      const CountryName = evt.detail.value;
+      // this.selectedCountry = CountryName;
+      if (CountryName) {
+        axios
+          .get(`${api}countries/${CountryName}`)
+          .then(({ data }) => {
+            const ResultData = data;
+            this.isLoading = false;
+            this.covidData.totalDeaths = ResultData.deaths.value;
+            this.covidData.totalConfirmed = ResultData.confirmed.value;
+            const recovered: number =
+              this.covidData.totalConfirmed - this.covidData.totalDeaths;
+            this.covidData.totalRecovered = recovered;
+          })
+
+          .catch((err) => {
+            this.isLoading = false;
+            console.log("error", err);
+          });
+      }
     },
     getCountries: function () {
       axios.get(`${api}countries`).then((res) => {
-        const allCountries = res.data.countries;
-        allCountries.forEach((country: Countries) => {
+        const EachCountryName = res.data.countries;
+        EachCountryName.forEach((country: Countries) => {
           this.covidData.countries.push(country.name);
         });
       });
@@ -160,10 +170,8 @@ export default defineComponent({
       axios
         .get(dailyApi)
         .then(({ data }) => {
-          this.isLoading = false;
           const resultData = data;
-          //console.log(resultData);
-
+          this.isLoading = false;
           resultData.forEach((results: CovidData) => {
             this.covidData.totalDeaths = results.deaths.total;
             this.covidData.totalConfirmed = results.confirmed.total;
@@ -173,8 +181,8 @@ export default defineComponent({
           });
         })
         .catch((e: any) => {
-          console.log(e);
           this.isLoading = false;
+          console.log(e);
         });
     },
   },
@@ -187,8 +195,13 @@ export default defineComponent({
   font-size: 30px;
 }
 #CountryTitle {
+  margin-top: 0.6rem;
   text-transform: uppercase;
   font-size: 30px;
-  font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
+  font-family: sans-serif;
+}
+
+#spinner {
+  align-self: center;
 }
 </style>

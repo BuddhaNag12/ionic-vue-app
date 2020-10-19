@@ -11,18 +11,21 @@
           <ion-title size="large">Contents</ion-title>
         </ion-toolbar>
       </ion-header>
-      
-      <ExploreContainer name="Contents page" />
     </ion-content>
   </ion-page>
 </template>
 
 <script lang="ts">
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent } from '@ionic/vue';
-import ExploreContainer from '@/components/ExploreContainer.vue';
+import {
+  IonPage,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+} from "@ionic/vue";
 
-export default  {
-  name: 'Contents',
-  components: { ExploreContainer, IonHeader, IonToolbar, IonTitle, IonContent, IonPage }
-}
+export default {
+  name: "Contents",
+  components: { IonHeader, IonToolbar, IonTitle, IonContent, IonPage },
+};
 </script>

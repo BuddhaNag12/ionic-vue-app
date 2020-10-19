@@ -1,8 +1,10 @@
 <template>
-  <ion-card id="card">
+  <ion-card id="card" :class="getBorderType(valueType)">
     <ion-card-header id="header">
       <ion-card-title id="title">Total {{ valueType }}</ion-card-title>
-      <ion-card-subtitle id="subtitle">{{ valueType }} cases in total</ion-card-subtitle>
+      <ion-card-subtitle id="subtitle"
+        >{{ valueType }} cases in total</ion-card-subtitle
+      >
     </ion-card-header>
     <ion-card-content id="values">
       {{ totalValues }}
@@ -10,7 +12,7 @@
   </ion-card>
 </template>
 
-<script>
+<script lang="ts">
 import {
   IonCard,
   IonCardContent,
@@ -40,7 +42,16 @@ export default defineComponent({
   },
 
   setup() {
-    return { warning, wifi };
+    function getBorderType(valueType: string) {
+      if (valueType == "Deaths") {
+        return "deaths-top";
+      } else if (valueType == "Recovered") {
+        return "recovered-top";
+      } else {
+        return "active-top";
+      }
+    }
+    return { warning, wifi, getBorderType };
   },
 });
 </script>
@@ -51,15 +62,26 @@ export default defineComponent({
   border-radius: 24px;
 }
 
-#title,#subtitle,#values{
+#title,
+#subtitle,
+#values {
   text-align: center;
 }
 
-#title{
+#title {
   font-size: 30px;
 }
 
-#values{
+#values {
   font-size: 20px;
+}
+.deaths-top {
+  border-top: 2px solid red;
+}
+.recovered-top {
+  border-top: 2px solid green;
+}
+.active-top {
+  border-top: 2px solid lightcoral;
 }
 </style>
